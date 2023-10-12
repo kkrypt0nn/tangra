@@ -113,6 +113,9 @@ var (
 		"${level:color}": func() string {
 			return GetLevelColor(CurrentLoggingLevel)
 		},
+		"${level:lowername}": func() string {
+			return strings.ToLower(GetLevelName(CurrentLoggingLevel))
+		},
 		"${level:name}": func() string {
 			return GetLevelName(CurrentLoggingLevel)
 		},

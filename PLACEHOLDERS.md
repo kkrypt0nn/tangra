@@ -18,6 +18,7 @@ This is the list of placeholders and aliases that will get replaced in your logg
 | Name                      | Value                                                      |
 |---------------------------|------------------------------------------------------------|
 | `${level:color}`          | The color representing the logging level                   |
+| `${level:lowername}`      | The name in lowercase representing the logging level       |
 | `${level:name}`           | The name representing the logging level                    |
 | `${level:shortname}`      | The short name representing the logging level              |
 
@@ -97,6 +98,7 @@ This is the list of placeholders and aliases that will get replaced in your logg
 ## Aliases
 
 ### Caller
+
 | Name               | Alias of                  |
 |--------------------|---------------------------|
 | `${function}`      | `${caller:function}`      |
