@@ -1,6 +1,6 @@
 # tangra
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/kkrypt0nn/tangra.svg)](https://pkg.go.dev/github.com/kkrypt0nn/tangra) ![Repository License](https://img.shields.io/github/license/kkrypt0nn/tangra?style=flat-square) ![Code Size](https://img.shields.io/github/languages/code-size/kkrypt0nn/tangra?style=flat-square) ![Last Commit](https://img.shields.io/github/last-commit/kkrypt0nn/tangra?style=flat-square)
+[![Discord Server Badge](https://img.shields.io/discord/1358456011316396295?logo=discord)](https://discord.gg/xj6y5ZaTMr) [![Go Reference](https://pkg.go.dev/badge/github.com/kkrypt0nn/tangra.svg)](https://pkg.go.dev/github.com/kkrypt0nn/tangra) ![Repository License](https://img.shields.io/github/license/kkrypt0nn/tangra?style=flat-square) ![Code Size](https://img.shields.io/github/languages/code-size/kkrypt0nn/tangra?style=flat-square) ![Last Commit](https://img.shields.io/github/last-commit/kkrypt0nn/tangra?style=flat-square)
 
 A lightweight and easy to use Go logging library that includes logging functionalities with different levels and custom
 formatting. It can also be used as a library to simply format the various messages you print in the terminal.
