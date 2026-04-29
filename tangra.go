@@ -2,17 +2,9 @@ package tangra
 
 import (
 	"fmt"
-	"github.com/kkrypt0nn/tangra/terminal"
 	"os"
-)
 
-var (
-	CurrentLoggingLevel   = NONE
-	CurrentDateFormat     = "Jan 02, 2006"
-	CurrentDatetimeFormat = "Jan 02, 2006 15:04:05"
-	CurrentTimeFormat     = "15:04:05"
-
-	ForceStyling = false
+	"github.com/kkrypt0nn/tangra/v2/terminal"
 )
 
 // Logger is represents a logger structure.
@@ -23,20 +15,29 @@ type Logger struct {
 	Prefix string
 	// LogFile is the log file to write the messages into.
 	LogFile *os.File
+
+	loggingLevel   Level
+	dateFormat     string
+	datetimeFormat string
+	timeFormat     string
+	forceStyling   bool
 }
 
 // NewLogger creates a new logger.
 func NewLogger() *Logger {
 	return &Logger{
-		Styling: true,
-		Prefix:  "${datetime} ${level:color}${level:name}${reset}: ",
-		LogFile: nil,
+		Styling:        true,
+		Prefix:         "${datetime} ${level:color}${level:name}${reset}: ",
+		loggingLevel:   NONE,
+		dateFormat:     "Jan 02, 2006",
+		datetimeFormat: "Jan 02, 2006 15:04:05",
+		timeFormat:     "15:04:05",
 	}
 }
 
 // SetForceStyling sets to whether it should force the styling render.
 func (l *Logger) SetForceStyling(forceStyling bool) {
-	ForceStyling = forceStyling
+	l.forceStyling = forceStyling
 }
 
 // SetLogFile will set the log file to write logs into.
@@ -46,17 +47,17 @@ func (l *Logger) SetLogFile(file *os.File) {
 
 // SetDateFormat sets the format to use when logging the date.
 func (l *Logger) SetDateFormat(format string) {
-	CurrentDateFormat = format
+	l.dateFormat = format
 }
 
 // SetDatetimeFormat sets the format to use when logging the date and time.
 func (l *Logger) SetDatetimeFormat(format string) {
-	CurrentDatetimeFormat = format
+	l.datetimeFormat = format
 }
 
 // SetTimeFormat sets the format to use when logging the time.
 func (l *Logger) SetTimeFormat(format string) {
-	CurrentTimeFormat = format
+	l.timeFormat = format
 }
 
 // SetStyling sets the styling setting of the logger.
@@ -75,23 +76,17 @@ func (l *Logger) SetLevelColor(id Level, color string) {
 }
 
 func (l *Logger) doLog(level Level, message string) {
-	CurrentLoggingLevel = level
+	previousLevel := l.loggingLevel
+	l.loggingLevel = level
+	defer func() { l.loggingLevel = previousLevel }()
 
-	// So that Print and Println do not keep the previous logging level.
-	defer l.SetLoggingLevel(NONE)
+	formatted := l.Prefix + message + terminal.RESET
+	formatted = l.formatMessage(formatted, true)
 
-	message = l.Prefix + message + terminal.RESET
-	message = AddVariables(message)
-	if (l.Styling && terminal.AreColorsSupported()) || (ForceStyling) {
-		message = AddStyling(message)
-	} else {
-		message = RemoveStyling(message)
-	}
-	fmt.Println(message)
+	fmt.Println(formatted)
+
 	if l.LogFile != nil {
-		message = RemoveStyling(message)
-		_, err := l.LogFile.WriteString(message + "\n")
-		if err != nil {
+		if _, err := l.LogFile.WriteString(l.removeStyling(formatted) + "\n"); err != nil {
 			panic(err)
 		}
 	}
@@ -134,23 +129,24 @@ func (l *Logger) Log(level Level, message string) {
 
 // SetLoggingLevel sets the logging level.
 func (l *Logger) SetLoggingLevel(level Level) {
-	CurrentLoggingLevel = level
+	l.loggingLevel = level
 }
 
 // Print simply prints the message, without logging level.
 func (l *Logger) Print(message string) {
-	message = AddVariables(message)
-	if (l.Styling && terminal.AreColorsSupported()) || (ForceStyling) {
-		message = AddStyling(message)
-	}
-	fmt.Print(message + terminal.RESET)
+	fmt.Print(l.formatMessage(message, true) + terminal.RESET)
 }
 
 // Println simply prints the message with a new line, without logging level.
 func (l *Logger) Println(message string) {
-	message = AddVariables(message)
-	if (l.Styling && terminal.AreColorsSupported()) || (ForceStyling) {
-		message = AddStyling(message)
+	fmt.Println(l.formatMessage(message, true) + terminal.RESET)
+}
+
+// formatMessage formats a message with or without styling
+func (l *Logger) formatMessage(message string, withStyling bool) string {
+	message = l.addVariables(message)
+	if withStyling && ((l.Styling && terminal.AreColorsSupported()) || l.forceStyling) {
+		return l.addStyling(message)
 	}
-	fmt.Println(message + terminal.RESET)
+	return l.removeStyling(message)
 }

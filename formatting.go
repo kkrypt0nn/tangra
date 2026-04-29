@@ -1,18 +1,19 @@
 package tangra
 
 import (
-	"github.com/kkrypt0nn/tangra/terminal"
 	"os"
 	"os/user"
 	"runtime"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/kkrypt0nn/tangra/v2/terminal"
 )
 
-var (
-	// Aliases are the aliases for the following placeholders
-	Aliases = map[string]string{
+// aliases returns the placeholder aliases
+func (l *Logger) aliases() map[string]string {
+	return map[string]string{
 		// Variables
 		"${date}":             "${now:date}",
 		"${time}":             "${now:time}",
@@ -73,103 +74,11 @@ var (
 		"${strikethrough}": "${effect:strikethrough}",
 		"${reset}":         "${effect:reset}",
 	}
+}
 
-	// Variables are the different variables to replace.
-	Variables = map[string]func() string{
-		// Caller
-		"${caller:function}": func() string {
-			pc, _, _, ok := runtime.Caller(4)
-			details := runtime.FuncForPC(pc)
-			if ok && details != nil {
-				return details.Name()
-			}
-			return ""
-		},
-		"${caller:shortfunction}": func() string {
-			pc, _, _, ok := runtime.Caller(4)
-			details := runtime.FuncForPC(pc)
-			split := strings.Split(details.Name(), ".")
-			if ok && details != nil && len(split) >= 2 {
-				return split[len(split)-1]
-			}
-			return ""
-		},
-		"${caller:file}": func() string {
-			_, file, _, ok := runtime.Caller(3)
-			split := strings.Split(file, "/")
-			if ok && len(split) >= 1 {
-				return split[len(split)-1]
-			}
-			return ""
-		},
-		"${caller:line}": func() string {
-			_, _, line, ok := runtime.Caller(3)
-			if ok {
-				return strconv.Itoa(line)
-			}
-			return "0"
-		},
-		// Logging Level
-		"${level:color}": func() string {
-			return GetLevelColor(CurrentLoggingLevel)
-		},
-		"${level:lowername}": func() string {
-			return strings.ToLower(GetLevelName(CurrentLoggingLevel))
-		},
-		"${level:name}": func() string {
-			return GetLevelName(CurrentLoggingLevel)
-		},
-		"${level:shortname}": func() string {
-			return GetLevelShortName(CurrentLoggingLevel)
-		},
-		// Date & Time Now
-		"${now:date}": func() string {
-			return time.Now().Format(CurrentDateFormat)
-		},
-		"${now:time}": func() string {
-			return time.Now().Format(CurrentTimeFormat)
-		},
-		"${now:datetime}": func() string {
-			return time.Now().Format(CurrentDatetimeFormat)
-		},
-		// System
-		"${sys:architecture}": func() string {
-			return runtime.GOARCH
-		},
-		"${sys:hostname}": func() string {
-			hostname, err := os.Hostname()
-			if err != nil {
-				return ""
-			}
-			return hostname
-		},
-		"${sys:operating_system}": func() string {
-			return runtime.GOOS
-		},
-		"${sys:username}": func() string {
-			user, err := user.Current()
-			if err != nil {
-				return ""
-			}
-			return user.Username
-		},
-		"${sys:groupid}": func() string {
-			user, err := user.Current()
-			if err != nil {
-				return ""
-			}
-			return user.Gid
-		},
-		"${sys:userid}": func() string {
-			user, err := user.Current()
-			if err != nil {
-				return ""
-			}
-			return user.Uid
-		},
-	}
-	// Styles are the different types of styling.
-	Styles = map[string]string{
+// styling returns the styling placeholder and theri ANSI code
+func (l *Logger) styling() map[string]string {
+	return map[string]string{
 		// Foreground Colors
 		"${fg:black}":        terminal.BLACK,
 		"${fg:red}":          terminal.RED,
@@ -213,38 +122,135 @@ var (
 		"${effect:strikethrough}": terminal.STRIKETHROUGH,
 		"${effect:reset}":         terminal.RESET,
 	}
-)
+}
 
-// ReplaceAliases will replace the aliases with the original placeholder.
-func ReplaceAliases(message string) string {
-	for a, v := range Aliases {
-		message = strings.Replace(message, a, v, -1)
+// variables returns the variables that are dynamic
+func (l *Logger) variables() map[string]func() string {
+	return map[string]func() string{
+		// Caller
+		"${caller:function}": func() string {
+			pc, _, _, ok := runtime.Caller(4)
+			details := runtime.FuncForPC(pc)
+			if ok && details != nil {
+				return details.Name()
+			}
+			return ""
+		},
+		"${caller:shortfunction}": func() string {
+			pc, _, _, ok := runtime.Caller(4)
+			details := runtime.FuncForPC(pc)
+			split := strings.Split(details.Name(), ".")
+			if ok && details != nil && len(split) >= 2 {
+				return split[len(split)-1]
+			}
+			return ""
+		},
+		"${caller:file}": func() string {
+			_, file, _, ok := runtime.Caller(4)
+			split := strings.Split(file, "/")
+			if ok && len(split) >= 1 {
+				return split[len(split)-1]
+			}
+			return ""
+		},
+		"${caller:line}": func() string {
+			_, _, line, ok := runtime.Caller(4)
+			if ok {
+				return strconv.Itoa(line)
+			}
+			return "0"
+		},
+		// Logging Level
+		"${level:color}": func() string {
+			return GetLevelColor(l.loggingLevel, l.forceStyling)
+		},
+		"${level:lowername}": func() string {
+			return strings.ToLower(GetLevelName(l.loggingLevel))
+		},
+		"${level:name}": func() string {
+			return GetLevelName(l.loggingLevel)
+		},
+		"${level:shortname}": func() string {
+			return GetLevelShortName(l.loggingLevel)
+		},
+		// Date & Time Now
+		"${now:date}": func() string {
+			return time.Now().Format(l.dateFormat)
+		},
+		"${now:time}": func() string {
+			return time.Now().Format(l.timeFormat)
+		},
+		"${now:datetime}": func() string {
+			return time.Now().Format(l.datetimeFormat)
+		},
+		// System
+		"${sys:architecture}": func() string {
+			return runtime.GOARCH
+		},
+		"${sys:hostname}": func() string {
+			hostname, err := os.Hostname()
+			if err != nil {
+				return ""
+			}
+			return hostname
+		},
+		"${sys:operating_system}": func() string {
+			return runtime.GOOS
+		},
+		"${sys:username}": func() string {
+			user, err := user.Current()
+			if err != nil {
+				return ""
+			}
+			return user.Username
+		},
+		"${sys:groupid}": func() string {
+			user, err := user.Current()
+			if err != nil {
+				return ""
+			}
+			return user.Gid
+		},
+		"${sys:userid}": func() string {
+			user, err := user.Current()
+			if err != nil {
+				return ""
+			}
+			return user.Uid
+		},
+	}
+}
+
+// replaceAliases will replace the aliases with the original placeholder.
+func (l *Logger) replaceAliases(message string) string {
+	for a, v := range l.aliases() {
+		message = strings.ReplaceAll(message, a, v)
 	}
 	return message
 }
 
-// AddStyling will add styling into the message.
-func AddStyling(message string) string {
-	for e, v := range Styles {
-		message = strings.Replace(message, e, v, -1)
+// addStyling will add styling into the message.
+func (l *Logger) addStyling(message string) string {
+	for e, v := range l.styling() {
+		message = strings.ReplaceAll(message, e, v)
 	}
 	return message
 }
 
-// RemoveStyling will remove styling from the message.
-func RemoveStyling(message string) string {
-	for e, v := range Styles {
-		message = strings.Replace(message, e, "", -1)
-		message = strings.Replace(message, v, "", -1)
+// removeStyling will remove styling from the message.
+func (l *Logger) removeStyling(message string) string {
+	for e, v := range l.styling() {
+		message = strings.ReplaceAll(message, e, "")
+		message = strings.ReplaceAll(message, v, "")
 	}
 	return message
 }
 
-// AddVariables will add the various variables into the message.
-func AddVariables(message string) string {
-	message = ReplaceAliases(message)
-	for variable, v := range Variables {
-		message = strings.Replace(message, variable, v(), -1)
+// addVariables will add the various variables into the message.
+func (l *Logger) addVariables(message string) string {
+	message = l.replaceAliases(message)
+	for variable, v := range l.variables() {
+		message = strings.ReplaceAll(message, variable, v())
 	}
 	return message
 }

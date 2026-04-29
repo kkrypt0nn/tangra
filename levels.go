@@ -1,6 +1,6 @@
 package tangra
 
-import "github.com/kkrypt0nn/tangra/terminal"
+import "github.com/kkrypt0nn/tangra/v2/terminal"
 
 // Level represents the level of logging - https://logging.apache.org/log4j/2.x/log4j-api/apidocs/org/apache/logging/log4j/Level.html
 type Level int
@@ -53,8 +53,8 @@ var (
 )
 
 // GetLevelColor returns the color of the level.
-func GetLevelColor(id Level) string {
-	if terminal.AreColorsSupported() || ForceStyling {
+func GetLevelColor(id Level, forceStyling bool) string {
+	if terminal.AreColorsSupported() || forceStyling {
 		return LevelColors[id]
 	}
 	return ""
