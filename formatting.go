@@ -11,8 +11,7 @@ import (
 	"github.com/kkrypt0nn/tangra/v2/terminal"
 )
 
-// aliases returns the placeholder aliases
-func (l *Logger) aliases() map[string]string {
+func (l Logger) aliases() map[string]string {
 	return map[string]string{
 		// Variables
 		"${date}":             "${now:date}",
@@ -76,8 +75,7 @@ func (l *Logger) aliases() map[string]string {
 	}
 }
 
-// styling returns the styling placeholder and theri ANSI code
-func (l *Logger) styling() map[string]string {
+func (l Logger) styles() map[string]string {
 	return map[string]string{
 		// Foreground Colors
 		"${fg:black}":        terminal.BLACK,
@@ -124,8 +122,7 @@ func (l *Logger) styling() map[string]string {
 	}
 }
 
-// variables returns the variables that are dynamic
-func (l *Logger) variables() map[string]func() string {
+func (l Logger) variables(level Level) map[string]func() string {
 	return map[string]func() string{
 		// Caller
 		"${caller:function}": func() string {
@@ -162,16 +159,16 @@ func (l *Logger) variables() map[string]func() string {
 		},
 		// Logging Level
 		"${level:color}": func() string {
-			return GetLevelColor(l.loggingLevel, l.forceStyling)
+			return GetLevelColor(level, l.forceStyling)
 		},
 		"${level:lowername}": func() string {
-			return strings.ToLower(GetLevelName(l.loggingLevel))
+			return strings.ToLower(GetLevelName(level))
 		},
 		"${level:name}": func() string {
-			return GetLevelName(l.loggingLevel)
+			return GetLevelName(level)
 		},
 		"${level:shortname}": func() string {
-			return GetLevelShortName(l.loggingLevel)
+			return GetLevelShortName(level)
 		},
 		// Date & Time Now
 		"${now:date}": func() string {
@@ -221,35 +218,31 @@ func (l *Logger) variables() map[string]func() string {
 	}
 }
 
-// replaceAliases will replace the aliases with the original placeholder.
-func (l *Logger) replaceAliases(message string) string {
+func (l Logger) replaceAliases(message string) string {
 	for a, v := range l.aliases() {
 		message = strings.ReplaceAll(message, a, v)
 	}
 	return message
 }
 
-// addStyling will add styling into the message.
-func (l *Logger) addStyling(message string) string {
-	for e, v := range l.styling() {
+func (l Logger) addStyling(message string) string {
+	for e, v := range l.styles() {
 		message = strings.ReplaceAll(message, e, v)
 	}
 	return message
 }
 
-// removeStyling will remove styling from the message.
-func (l *Logger) removeStyling(message string) string {
-	for e, v := range l.styling() {
+func (l Logger) removeStyling(message string) string {
+	for e, v := range l.styles() {
 		message = strings.ReplaceAll(message, e, "")
 		message = strings.ReplaceAll(message, v, "")
 	}
 	return message
 }
 
-// addVariables will add the various variables into the message.
-func (l *Logger) addVariables(message string) string {
+func (l Logger) addVariables(level Level, message string) string {
 	message = l.replaceAliases(message)
-	for variable, v := range l.variables() {
+	for variable, v := range l.variables(level) {
 		message = strings.ReplaceAll(message, variable, v())
 	}
 	return message

@@ -15,8 +15,7 @@ func main() {
 		}
 		file = createdFile
 	}
-	l := tangra.NewLogger()
-	l.SetLogFile(file)
+	l := tangra.NewLogger().WithLogFile(file)
 	// The styling will get removed when writing into the file.
 	l.Debug("${fg:red}${effect:blink}${effect:bold}${sys:username} says hello!")
 }

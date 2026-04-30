@@ -7,4 +7,6 @@ import (
 func main() {
 	l := tangra.NewLogger()
 	l.Debug("Debug message example")
+	world := "world"
+	l.Infof("Hello %s", world)
 }

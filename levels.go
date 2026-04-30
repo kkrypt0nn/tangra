@@ -19,7 +19,7 @@ const (
 	// FATAL level designates very severe error events that will presumably lead the application to abort.
 	FATAL
 	// NONE will reset the logging level to nothing.
-	NONE Level = 1337
+	NONE Level = -1
 )
 
 var (
