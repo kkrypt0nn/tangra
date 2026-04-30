@@ -24,14 +24,14 @@ formatting. It can also be used as a library to simply format the various messag
 If you want to use this library for one of your projects, you can install it like any other Go library
 
 ```shell
-go get github.com/kkrypt0nn/tangra
+go get github.com/kkrypt0nn/tangra/v2
 ```
 
 ## Customizing
 
 ### Prefix
 
-The prefix, what comes before the message, can be changed with the `SetPrefix` method on a `Logger` structure.
+The prefix, what comes before the message, can be changed with the `WithPrefix` method on a `Logger` structure.
 
 > The default prefix is `${datetime} ${level:color}${level:name}${reset}: `
 
@@ -52,7 +52,7 @@ system.
 
 ### Styling
 
-You can choose whether you want to style your messages or not with the `SetStyling` method on a `Logger` structure.
+You can choose whether you want to style your messages or not with the `WithStyling` method on a `Logger` structure.
 Styling includes foreground colors, background colors and special effects such as bold, and others - see
 the [terminal package](terminal).
 

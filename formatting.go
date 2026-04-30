@@ -11,6 +11,13 @@ import (
 	"github.com/kkrypt0nn/tangra/v2/terminal"
 )
 
+type FormatMode int
+
+const (
+	HumanFormat FormatMode = iota
+	JSONFormat
+)
+
 func (l Logger) aliases() map[string]string {
 	return map[string]string{
 		// Variables

@@ -3,8 +3,6 @@ package tangra
 import (
 	"fmt"
 	"os"
-
-	"github.com/kkrypt0nn/tangra/v2/terminal"
 )
 
 func (l Logger) log(level Level, message string) {
@@ -12,18 +10,16 @@ func (l Logger) log(level Level, message string) {
 		return
 	}
 
-	out := l.out
+	out := l.output
 	if out == nil {
 		out = os.Stdout
 	}
 
-	raw := l.prefix + message + terminal.RESET
-	formatted := l.formatMessage(level, raw, true)
+	rendered := l.render(level, message, l.styling)
 
-	_, _ = fmt.Fprintln(out, formatted)
-
+	_, _ = fmt.Fprintln(out, rendered)
 	if l.logFile != nil {
-		_, _ = fmt.Fprintln(l.logFile, l.removeStyling(formatted))
+		_, _ = fmt.Fprintln(l.logFile, l.removeStyling(rendered))
 	}
 }
 
